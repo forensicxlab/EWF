@@ -1,0 +1,15 @@
+[package]
+name = "ewf"
+version = "1.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4.17"
+env_logger = "0.10.0"
+compress = "0.2.1"
+glob = "0.3.1"
+hexdump = "0.1.1"
+md-5 = "0.10.5"
+flate2 = "1.0.25"
