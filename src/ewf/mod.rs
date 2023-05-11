@@ -420,17 +420,6 @@ impl EWF{
         self.header.print_info();
     }
 
-    // pub fn md5_hash(&self) -> String {
-    //     println!("Computing MD5 hash");
-    //     let mut hasher = Md5::new();
-    //     for segment in 1..self.ewf_header.segment_number+1{
-    //         for chunk in 0..self.chunks[&(segment as usize)].len(){
-    //             hasher.update(&self.read_chunk(segment as usize, chunk));
-    //         }
-    //     }
-    //     format!("{:x}", hasher.finalize())
-    // }
-
     pub fn md5_hash_read(& mut self) -> String {
         let buffer_size: usize = 0x40*512-1;
         println!("Computing MD5 hash using read");
