@@ -6,7 +6,6 @@ use std::io::Read;
 use std::io::Seek;
 use std::io::SeekFrom;
 use std::path::{Path, PathBuf};
-use compress::zlib;
 use std::collections::HashMap;
 use flate2::read::ZlibDecoder;
 
@@ -52,7 +51,7 @@ struct ChunkCache{
 }
 
 #[derive(Default)]
-pub(crate) struct EwfSegment{
+pub(crate) struct EWF{
     segments: Vec<File>,
     ewf_header: EwfHeader,
     sections: Vec<EwfSectionDescriptor>,
@@ -188,8 +187,8 @@ impl EwfHeaderSection{
     }
 }
 
-impl EwfSegment{
-    pub fn new(file_path: &str) -> Result<EwfSegment, String>{
+impl EWF{
+    pub fn new(file_path: &str) -> Result<EWF, String>{
         debug!("Parsing EWF Segment : {}", file_path);
 
         let fp: &Path = Path::new(file_path);
@@ -200,7 +199,7 @@ impl EwfSegment{
             Err(m) => return Err(m)
         };
 
-        let mut ewf: EwfSegment = EwfSegment::default();
+        let mut ewf: EWF = EWF::default();
 
         //Go through all of the segments and parse them.
         for file in files{
@@ -256,14 +255,14 @@ impl EwfSegment{
     }
 
 
-    fn parse_segment(mut self, file: File) -> Result<EwfSegment,String>{   
+    fn parse_segment(mut self, file: File) -> Result<EWF,String>{   
         self.ewf_header = match EwfHeader::new(&file){
             Ok(header) => header,
             Err(m) => return Err(m)
         };
 
         // Then, we place our pointer after the header section
-        let mut current_offset = 13; //We place our self just after the EWFHeaderSection.
+        let mut current_offset = 13; //We place our self just after the EWFHeader.
         let ewf_section_descriptor_size = 0x4c; // Each section descriptor size is 0x4c.
         let mut extracted_chunks: Vec<Chunk> = Vec::new();
 
@@ -421,7 +420,7 @@ impl EwfSegment{
         self.header.print_info();
     }
 
-    // fn md5_hash(&self) -> String {
+    // pub fn md5_hash(&self) -> String {
     //     println!("Computing MD5 hash");
     //     let mut hasher = Md5::new();
     //     for segment in 1..self.ewf_header.segment_number+1{
@@ -432,20 +431,20 @@ impl EwfSegment{
     //     format!("{:x}", hasher.finalize())
     // }
 
-    // fn md5_hash2(& mut self) -> String {
-    //     let buffer_size: usize = 0x40*512-1;
-    //     println!("Computing MD5 hash using read");
-    //     let mut hasher = Md5::new();
-    //     let mut data = self.read(buffer_size);
-    //     while data.len() > 0{
-    //         hasher.update(&data);
-    //         if data.len() < buffer_size{
-    //             return format!("{:x}", hasher.finalize());
-    //         }
-    //         data = self.read(buffer_size);
-    //     }
-    //     return format!("{:x}", hasher.finalize());
-    // }
+    pub fn md5_hash_read(& mut self) -> String {
+        let buffer_size: usize = 0x40*512-1;
+        println!("Computing MD5 hash using read");
+        let mut hasher = Md5::new();
+        let mut data = self.read(buffer_size);
+        while data.len() > 0{
+            hasher.update(&data);
+            if data.len() < buffer_size{
+                return format!("{:x}", hasher.finalize());
+            }
+            data = self.read(buffer_size);
+        }
+        return format!("{:x}", hasher.finalize());
+    }
 }
 
 fn find_files(path: &Path) -> Result<Vec<PathBuf>, String> {
